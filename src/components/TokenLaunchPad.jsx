@@ -18,13 +18,7 @@ import { createCreateMetadataAccountV3Instruction } from "@metaplex-foundation/m
 const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
   "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 );
-
-const initialFormData = {
-  name: "",
-  symbol: "",
-  image: "",
-};
-
+import initialFormData from "../utils";
 const TokenLaunchPad = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -32,7 +26,7 @@ const TokenLaunchPad = () => {
   const [success, setSuccess] = useState("");
   const { connection } = useConnection();
   const wallet = useWallet();
-
+  const [mintKeypair, setMintKeypair] = useState(null);
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -46,7 +40,16 @@ const TokenLaunchPad = () => {
     }
 
     try {
-      const mintKeyPair = Keypair.generate();
+      const mintPair = Keypair.generate();
+      setMintKeypair(mintPair);
+      const metadata = {
+        mint: mintKeypair.publicKey,
+        name: `${formData.name}`,
+        description: `${formData.description}`,
+        symbol: `${formData.symbol}`,
+        uri: `${formData.image}`,
+        additionalMetadata: [],
+      };
       const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
       const transaction = new Transaction().add(
